@@ -4,6 +4,7 @@ import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Json.Decode
+import Mouse
 
 
 -- MODEL
@@ -11,15 +12,15 @@ import Json.Decode
 
 type alias Model =
     { newLabel : String
-    , labels : List Label
+    , labels : List Label, lastClick : Maybe Mouse.Position
     }
 
 
-init : Model
+init : ( Model, Cmd Msg )
 init =
-    { newLabel = ""
-    , labels = [ { text = "CodeStar", x = 100, y = 10 } ]
-    }
+    ( { newLabel = ""
+    , labels = [ { text = "CodeStar", x = 100, y = 10 } ], lastClick = Nothing
+    }, Cmd.none )
 
 
 
@@ -30,6 +31,7 @@ type Msg
     = NoOp
     | NewLabel String
     | SaveLabel Label
+    | Click Mouse.Position
 
 
 
@@ -117,17 +119,29 @@ onEnter msg =
 -- UPDATE
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NoOp ->
-            model
+            ( model, Cmd.none )
 
         NewLabel newLabel ->
-            { model | newLabel = newLabel }
+            ( { model | newLabel = newLabel }, Cmd.none )
 
         SaveLabel label ->
-            { model | labels = label :: model.labels }
+            ( { model | labels = label :: model.labels }, Cmd.none )
+
+        Click position ->
+            ( { model | lastClick = Just position }, Cmd.none )
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Mouse.clicks Click
 
 
 
@@ -136,8 +150,9 @@ update msg model =
 
 main : Program Never Model Msg
 main =
-    Html.beginnerProgram
-        { model = init
+    Html.program
+        { init = init
         , view = view
         , update = update
+        , subscriptions = subscriptions
         }
