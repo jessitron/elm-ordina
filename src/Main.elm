@@ -10,12 +10,16 @@ import Json.Decode
 
 
 type alias Model =
-    { newLabel : String }
+    { newLabel : String
+    , labels : List Label
+    }
 
 
 init : Model
 init =
-    { newLabel = "" }
+    { newLabel = ""
+    , labels = [ { text = "CodeStar", x = 100, y = 10 } ]
+    }
 
 
 
@@ -25,7 +29,7 @@ init =
 type Msg
     = NoOp
     | NewLabel String
-    | SaveLabel
+    | SaveLabel Label
 
 
 
@@ -43,13 +47,13 @@ view model =
                 ]
             ]
             []
-        , drawLabels [ { text = "CodeStar", x = 100, y = 10 } ]
+        , drawLabels model.labels
         , newLabelInput model
         ]
 
 
 diagram =
-    "elmbp.png"
+    "elmprogram.png"
 
 
 type alias Label =
@@ -81,6 +85,13 @@ newLabelInput model =
         [ Html.Attributes.id "newLabel"
         , Html.Events.onInput NewLabel
         , Html.Attributes.value model.newLabel
+        , onEnter
+            (SaveLabel
+                { text = model.newLabel
+                , x = 200
+                , y = 200
+                }
+            )
         , Html.Attributes.style
             [ ( "position", "absolute" )
             , ( "top", (toString 300) ++ "px" )
@@ -115,8 +126,8 @@ update msg model =
         NewLabel newLabel ->
             { model | newLabel = newLabel }
 
-        SaveLabel ->
-            model
+        SaveLabel label ->
+            { model | labels = label :: model.labels }
 
 
 
