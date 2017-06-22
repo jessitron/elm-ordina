@@ -2,18 +2,20 @@ module Main exposing (main)
 
 import Html exposing (Html)
 import Html.Attributes
+import Html.Events
+import Json.Decode
 
 
 -- MODEL
 
 
 type alias Model =
-    {}
+    { newLabel : String }
 
 
 init : Model
 init =
-    {}
+    { newLabel = "" }
 
 
 
@@ -22,6 +24,8 @@ init =
 
 type Msg
     = NoOp
+    | NewLabel String
+    | SaveLabel
 
 
 
@@ -40,13 +44,12 @@ view model =
             ]
             []
         , drawLabels [ { text = "CodeStar", x = 100, y = 10 } ]
+        , newLabelInput model
         ]
+
 
 diagram =
     "elmbp.png"
-
-
-
 
 
 type alias Label =
@@ -72,6 +75,33 @@ drawLabels labels =
         Html.div [] (List.map formatLabel labels)
 
 
+newLabelInput : Model -> Html Msg
+newLabelInput model =
+    Html.input
+        [ Html.Attributes.id "newLabel"
+        , Html.Events.onInput NewLabel
+        , Html.Attributes.value model.newLabel
+        , Html.Attributes.style
+            [ ( "position", "absolute" )
+            , ( "top", (toString 300) ++ "px" )
+            , ( "left", (toString 300) ++ "px" )
+            ]
+        ]
+        []
+
+
+onEnter : Msg -> Html.Attribute Msg
+onEnter msg =
+    let
+        isEnter code =
+            if code == 13 then
+                Json.Decode.succeed msg
+            else
+                Json.Decode.fail "not ENTER"
+    in
+        Html.Events.on "keydown" (Json.Decode.andThen isEnter Html.Events.keyCode)
+
+
 
 -- UPDATE
 
@@ -80,6 +110,12 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         NoOp ->
+            model
+
+        NewLabel newLabel ->
+            { model | newLabel = newLabel }
+
+        SaveLabel ->
             model
 
 
